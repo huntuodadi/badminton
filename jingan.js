@@ -1,19 +1,21 @@
 const axios = require('axios');
+const argParser = require('minimist');
+const { expectedDate, startDate, place } = argParser(process.argv);
 
-// 场地 from 82 to 91
-const place = 91; 
-
-// 期望抢的时间
-const expectedDate = '2021-12-28';
+if (!expectedDate || !startDate || !place) {
+  console.log('\x1b[31m', 'command should be like: node xx.js --expectedDate=2021-12-28 --startDate=2021-12-27 --place=90', '\x1b[0m')
+  process.exit(1)
+}
 
 // 开始时间
-const startTime = '2021-12-23 12:00:00';
+const startTime = `${startDate} 12:00:00`;
 
 const token = '5a027866676515f15ff67965e0fb04ad';
 
 const order = () => {
   axios.get(`https://shgypsapi.linkingfit.club/api/v1/booking/place/time?service_id=2857&place_ids=${place}&date=${expectedDate}`)
   .then(res => {
+    console.log('res:', res)
     const { place_id, place_time: sessions} = res.data.data[0];
     const matchedSessions = sessions.filter(session => {
       return session.start_time.indexOf('20:00:00') > -1 || session.start_time.indexOf('21:00:00') > -1
@@ -43,11 +45,13 @@ const order = () => {
       headers: { token }
     }).then(res => {
       console.log('order res:', res.data)
+      process.exit(1)
     })
   })
 }
 
 const timeGap = new Date(startTime).getTime() - Date.now();
+
 setTimeout(() => {
   order();
 }, timeGap)
