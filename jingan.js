@@ -50,11 +50,13 @@ const order = () => {
   })
 }
 
+let timer;
 const countTime = () => {
   const timeGap = new Date(startTime).getTime() - Date.now();
   if (timeGap > 1000) {
-    setTimeout(() => {
+    timer = setTimeout(() => {
       console.log('程序生效中，等待设定时间抵达...')
+      clearTimeout(timer);
       countTime();
     }, 1000)
   }
