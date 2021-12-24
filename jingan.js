@@ -1,9 +1,13 @@
 const axios = require('axios');
 const argParser = require('minimist');
-const { expectedDate, startDate, place } = argParser(process.argv);
+const { expectedDate, startDate } = argParser(process.argv);
 
-if (!expectedDate || !startDate || !place) {
-  console.log('\x1b[31m', 'command should be like: node xx.js --expectedDate=2021-12-28 --startDate=2021-12-27 --place=90', '\x1b[0m')
+let timeStamp;
+
+const places = [82, 83, 84, 85, 86, 87, 88, 89, 90, 91];
+
+if (!expectedDate || !startDate) {
+  console.log('\x1b[31m', 'command should be like: node jingan.js --expectedDate=2021-12-30 --startDate=2021-12-24', '\x1b[0m')
   process.exit(1)
 }
 
@@ -12,20 +16,27 @@ const startTime = `${startDate} 12:00:00`;
 
 const token = '5a027866676515f15ff67965e0fb04ad';
 
-const order = () => {
-  axios.get(`https://shgypsapi.linkingfit.club/api/v1/booking/place/time?service_id=2857&place_ids=${place}&date=${expectedDate}`)
+const order = (currentPlace) => {
+  axios.get(`https://shgypsapi.linkingfit.club/api/v1/booking/place/time?service_id=2857&place_ids=${currentPlace}&date=${expectedDate}`)
   .then(res => {
-    console.log('res:', res)
+    if (!res.data || !res.data.data) {
+      console.log(`重试 第${currentPlace}场地`)
+      order(currentPlace);
+      return;
+    }
     const { place_id, place_time: sessions} = res.data.data[0];
     const matchedSessions = sessions.filter(session => {
-      return session.start_time.indexOf('20:00:00') > -1 || session.start_time.indexOf('21:00:00') > -1
+      return session.status === 1 && (session.start_time.indexOf('20:00:00') > -1 || session.start_time.indexOf('21:00:00') > -1)
     })
-    console.log('matchedSessions:', matchedSessions)
+    if (matchedSessions.length < 2) {
+      console.log(`场次${currentPlace}没有剩余场地, 耗时 ${Date.now() - timeStamp}ms`)
+      order(currentPlace - 1);
+    }
     const totalPrice = matchedSessions.reduce((sum, current) => {
       return sum += current.price;
     }, 0);
     const place_time = [{
-      place_id: place,
+      place_id: currentPlace,
       time_id: matchedSessions.map(item => item.id)
     }];
     const payload = {
@@ -50,7 +61,7 @@ const order = () => {
   })
 }
 
-let timer;
+// let timer;
 const countTime = () => {
   const timeGap = new Date(startTime).getTime() - Date.now();
   if (timeGap > 1000) {
@@ -63,7 +74,8 @@ const countTime = () => {
   else {
     setTimeout(() => {
       console.log('时间到，action');
-      order();
+      timeStamp = Date.now();
+      places.forEach(item => order(item))
     }, timeGap)
   }
 }
