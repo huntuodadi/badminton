@@ -48,7 +48,10 @@ const order = (currentPlace) => {
       "coupon_ids": [],
       "service_id": 2857,
       "type": 4,
-      "place_time": place_time,
+      "place_time": [{
+        place_id: currentPlace,
+        time_id: matchedSessions.map(item => item.id)
+      }],
       "location": "31.224184036254883,121.3460464477539"
     }
 
@@ -61,12 +64,35 @@ const order = (currentPlace) => {
   })
 }
 
+const justOrder = () => {
+  const payload = {
+    "pay_type": 0,
+    "business_id": 39,
+    "title": "羽毛球馆",
+    "amount": 160,
+    "total_price": 160,
+    "coupon_ids": [],
+    "service_id": 2857,
+    "type": 4,
+    "place_time": [{
+      place_id: 91,
+      time_id: [114274, 114284]
+    }],
+    "location": "31.224184036254883,121.3460464477539"
+  }
+  axios.post('https://shgypsapi.linkingfit.club/api/v1/user/order', payload, {
+    headers: { token }
+  }).then(res => {
+    console.log('order res:', res.data)
+    process.exit(1)
+  })
+}
+
 // let timer;
 const countTime = () => {
   const timeGap = new Date(startTime).getTime() - Date.now();
   if (timeGap > 1000) {
     timer = setTimeout(() => {
-      console.log('程序生效中，等待设定时间抵达...')
       clearTimeout(timer);
       countTime();
     }, 1000)
@@ -75,7 +101,8 @@ const countTime = () => {
     setTimeout(() => {
       console.log('时间到，action');
       timeStamp = Date.now();
-      places.forEach(item => order(item))
+      // places.forEach(item => order(item))
+      justOrder();
     }, timeGap)
   }
 }
