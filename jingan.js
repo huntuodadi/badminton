@@ -69,14 +69,14 @@ const justOrder = () => {
     "pay_type": 0,
     "business_id": 39,
     "title": "羽毛球馆",
-    "amount": 160,
-    "total_price": 160,
+    "amount": 80,
+    "total_price": 80,
     "coupon_ids": [],
     "service_id": 2857,
     "type": 4,
     "place_time": [{
       place_id: 91,
-      time_id: [114274, 114284]
+      time_id: [114274]
     }],
     "location": "31.224184036254883,121.3460464477539"
   }
@@ -84,27 +84,36 @@ const justOrder = () => {
     headers: { token }
   }).then(res => {
     console.log('order res:', res.data)
-    process.exit(1)
+    return
   })
 }
 
-// let timer;
-const countTime = () => {
-  const timeGap = new Date(startTime).getTime() - Date.now();
-  if (timeGap > 1000) {
-    timer = setTimeout(() => {
-      clearTimeout(timer);
-      countTime();
-    }, 1000)
-  }
-  else {
-    setTimeout(() => {
-      console.log('时间到，action');
-      timeStamp = Date.now();
-      // places.forEach(item => order(item))
-      justOrder();
-    }, timeGap)
-  }
-}
+const timeGap = new Date(startTime).getTime() - Date.now();
 
-countTime();
+setTimeout(() => {
+  console.log('3s')
+  setInterval(() => {
+    justOrder()
+  }, 50)
+}, timeGap - 3 * 1000)
+
+// let timer;
+// const countTime = () => {
+//   const timeGap = new Date(startTime).getTime() - Date.now();
+//   if (timeGap > 1000) {
+//     timer = setTimeout(() => {
+//       clearTimeout(timer);
+//       countTime();
+//     }, 1000)
+//   }
+//   else {
+//     setTimeout(() => {
+//       console.log('时间到，action');
+//       timeStamp = Date.now();
+//       // places.forEach(item => order(item))
+//       justOrder();
+//     }, timeGap)
+//   }
+// }
+
+// countTime();
